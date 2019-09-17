@@ -5,10 +5,13 @@ from requests.exceptions import ReadTimeout, ConnectionError
 from dotenv import load_dotenv
 from time import sleep
 import telegram
+from telegram.error import TimedOut, NetworkError
 
 
-def send_long_polling_request(token, timeout, last_timestamp):
-# url = "https://dvmn.org/api/user_reviews/"
+SLEEP_TIMEOUT = 30
+
+
+def send_long_polling_request(token, last_timestamp, timeout=100):
     url_long_polling = "https://dvmn.org/api/long_polling/"
 
     headers = {
@@ -18,7 +21,6 @@ def send_long_polling_request(token, timeout, last_timestamp):
         "timestamp": last_timestamp,
     }
     if last_timestamp:
-        print(f"\nSend request with {last_timestamp}...")
         response = requests.get(
             url_long_polling, 
             headers=headers,
@@ -26,7 +28,6 @@ def send_long_polling_request(token, timeout, last_timestamp):
             timeout=timeout
         )
     else:
-        print(f"\nSend request...")
         response = requests.get(
             url_long_polling, 
             headers=headers,
@@ -34,39 +35,57 @@ def send_long_polling_request(token, timeout, last_timestamp):
         )        
     return response
 
-def request_in_loop(dvmn_token, timeout):
-    last_timestamp = None
-    while True:
-        try:
-            response = send_long_polling_request(dvmn_token, timeout, last_timestamp)
-            response_data = response.json()
-            print(response_data["status"])
-            if response_data["status"] == "found":
-                last_timestamp = response_data["last_attempt_timestamp"]
-            if response_data["status"] == "timeout":
-                last_timestamp = response_data["timestamp_to_request"]
-            pprint(response.json())
-        except ReadTimeout as error:
-            print(f"Timeout Error occured: {error}")
-        except ConnectionError as error:
-            print(error)
-            sleep(timeout)
+
+def send_notification(results, token, user_id, name="студент"):
+    bot = telegram.Bot(token=token)
+    greeting = f"Привет, {name}! Твоя работа вернулась с проверки.\n\n"  
+    dvmn_base_url = "https://dvmn.org"  
+    for result in results:    
+        lesson_info = f"Задача:\n{result['lesson_title']}.\n\n"
+        if result['is_negative']:
+            result_message = "К сожалению, код нуждается в доработке, "
+        else:
+            result_message = f"Отличный код! Переходи к следующей задаче: "
+        url_info = f"{dvmn_base_url}{result['lesson_url']}"
+        message = ''.join([greeting, lesson_info, result_message,url_info])
+        response = bot.send_message(
+            user_id, 
+            message
+        )
 
 
 def main(): 
     load_dotenv()
     dvmn_token = os.getenv("DVMN_API_TOKEN")
-    timeout = 5
-    # request_in_loop(dvmn_token, timeout)
     telegram_token =  os.getenv("TELEGRAM_BOT_TOKEN")
     telegram_user_id = os.getenv("TELEGRAM_USER_ID")
-    bot = telegram.Bot(token=telegram_token)
-    print(bot.get_me())
-    response = bot.send_message(
-        telegram_user_id, 
-        f"Уже пора, диктант через 11 минут!"
-    )
-    print(response)
+    telegram_user_name = os.getenv("TELEGRAM_USER_NAME")
+    last_timestamp = None
+    while True:
+        try:
+            response = send_long_polling_request(
+                dvmn_token, 
+                last_timestamp
+            )
+            response_data = response.json()
+            if response_data["status"] == "found":
+                send_notification(
+                    response_data["new_attempts"], 
+                    telegram_token, 
+                    telegram_user_id, 
+                    name=telegram_user_name
+                )
+                last_timestamp = response_data["last_attempt_timestamp"]
+            if response_data["status"] == "timeout":
+                last_timestamp = response_data["timestamp_to_request"]
+        except ReadTimeout as error:
+            print(error)
+        except ConnectionError as error:
+            print(error)
+            sleep(SLEEP_TIMEOUT)
+        except (NetworkError, TimeOut) as error:
+            print(error)
+            sleep(SLEEP_TIMEOUT)
 
 
 if __name__=='__main__':
