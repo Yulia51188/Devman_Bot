@@ -3,6 +3,7 @@ import os
 from pprint import pprint
 from requests.exceptions import ReadTimeout, ConnectionError
 from dotenv import load_dotenv
+from time import sleep
 
 
 def send_long_polling_request(token):
