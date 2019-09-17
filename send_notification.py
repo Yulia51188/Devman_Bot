@@ -4,6 +4,7 @@ from pprint import pprint
 from requests.exceptions import ReadTimeout, ConnectionError
 from dotenv import load_dotenv
 from time import sleep
+import telegram
 
 
 def send_long_polling_request(token, timeout, last_timestamp):
@@ -33,15 +34,11 @@ def send_long_polling_request(token, timeout, last_timestamp):
         )        
     return response
 
-
-def main(): 
-    load_dotenv()
-    token = os.getenv("DVMN_API_TOKEN")
-    timeout = 100
+def request_in_loop(dvmn_token, timeout):
     last_timestamp = None
     while True:
         try:
-            response = send_long_polling_request(token, timeout, last_timestamp)
+            response = send_long_polling_request(dvmn_token, timeout, last_timestamp)
             response_data = response.json()
             print(response_data["status"])
             if response_data["status"] == "found":
@@ -54,6 +51,22 @@ def main():
         except ConnectionError as error:
             print(error)
             sleep(timeout)
+
+
+def main(): 
+    load_dotenv()
+    dvmn_token = os.getenv("DVMN_API_TOKEN")
+    timeout = 5
+    # request_in_loop(dvmn_token, timeout)
+    telegram_token =  os.getenv("TELEGRAM_BOT_TOKEN")
+    telegram_user_id = os.getenv("TELEGRAM_USER_ID")
+    bot = telegram.Bot(token=telegram_token)
+    print(bot.get_me())
+    response = bot.send_message(
+        telegram_user_id, 
+        f"Уже пора, диктант через 11 минут!"
+    )
+    print(response)
 
 
 if __name__=='__main__':
