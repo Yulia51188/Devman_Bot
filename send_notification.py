@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from time import sleep
 
 
-def send_long_polling_request(token):
+def send_long_polling_request(token, timeout):
 # url = "https://dvmn.org/api/user_reviews/"
     url_long_polling = "https://dvmn.org/api/long_polling/"
     print("\nSend request...")
@@ -15,7 +15,7 @@ def send_long_polling_request(token):
         headers = {
             "Authorization": f"Token {token}"
         },
-        timeout=5
+        timeout=timeout
     )
     return response
 
@@ -23,6 +23,7 @@ def send_long_polling_request(token):
 def main(): 
     load_dotenv()
     token = os.getenv("DVMN_API_TOKEN")
+    timeout = 5
     while True:
         try:
             response = send_long_polling_request(token)
@@ -31,7 +32,7 @@ def main():
             print("Timeout Error occured: {error}")
         except ConnectionError as error:
             print(error)
-            sleep(5)
+            sleep(timeout)
 
 
 if __name__=='__main__':
