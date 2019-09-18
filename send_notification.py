@@ -1,7 +1,7 @@
 import requests
 import os
 from pprint import pprint
-from requests.exceptions import ReadTimeout, ConnectionError
+from requests.exceptions import ReadTimeout, ConnectionError, HTTPError
 from dotenv import load_dotenv
 from time import sleep
 import telegram
@@ -67,6 +67,10 @@ def main():
                 dvmn_token, 
                 last_timestamp
             )
+            response.raise_for_status()
+            if error in response:
+                raise HTTPError(f"Error in response with status 200: "
+                    f"{response.json()}")
             response_data = response.json()
             if response_data["status"] == "found":
                 send_notification(
@@ -80,7 +84,7 @@ def main():
                 last_timestamp = response_data["timestamp_to_request"]
         except ReadTimeout as error:
             pass
-        except ConnectionError as error:
+        except (ConnectionError, HTTPError) as error:
             print(f"WARNING:{error}")
             sleep(SLEEP_TIMEOUT)
         except (NetworkError, TimedOut) as error:
