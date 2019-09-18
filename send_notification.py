@@ -79,13 +79,12 @@ def main():
             if response_data["status"] == "timeout":
                 last_timestamp = response_data["timestamp_to_request"]
         except ReadTimeout as error:
-            print(error)
+            pass
         except ConnectionError as error:
-            print(error)
+            print(f"WARNING:{error}")
             sleep(SLEEP_TIMEOUT)
-        except (NetworkError, TimeOut) as error:
-            print(error)
         except (NetworkError, TimedOut) as error:
+            print(f"WARNING:{error}")
             sleep(SLEEP_TIMEOUT)
 
 
