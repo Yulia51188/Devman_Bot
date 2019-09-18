@@ -85,6 +85,7 @@ def main():
             sleep(SLEEP_TIMEOUT)
         except (NetworkError, TimeOut) as error:
             print(error)
+        except (NetworkError, TimedOut) as error:
             sleep(SLEEP_TIMEOUT)
 
 
