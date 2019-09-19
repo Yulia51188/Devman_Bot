@@ -68,10 +68,10 @@ def main():
                 last_timestamp
             )
             response.raise_for_status()
-            if error in response:
-                raise HTTPError(f"Error in response with status 200: "
-                    f"{response.json()}")
             response_data = response.json()
+            if "error" in response_data.keys():
+                raise HTTPError(f"Error in response with status 200: "
+                    f"{response_data['error']}")            
             if response_data["status"] == "found":
                 send_notification(
                     response_data["new_attempts"], 
