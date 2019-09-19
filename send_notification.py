@@ -33,7 +33,12 @@ def send_long_polling_request(token, last_timestamp, timeout=100):
             headers=headers,
             timeout=timeout
         )        
-    return response
+    response.raise_for_status()
+    response_data = response.json()
+    if "error" in response_data.keys():
+        raise HTTPError(f"Error in response with status 200: "
+            f"{response_data['error']}")  
+    return response_data
 
 
 def send_notification(results, token, user_id, name="студент"):
@@ -66,22 +71,17 @@ def main():
             response = send_long_polling_request(
                 dvmn_token, 
                 last_timestamp
-            )
-            response.raise_for_status()
-            response_data = response.json()
-            if "error" in response_data.keys():
-                raise HTTPError(f"Error in response with status 200: "
-                    f"{response_data['error']}")            
-            if response_data["status"] == "found":
+            )          
+            if response["status"] == "found":
                 send_notification(
-                    response_data["new_attempts"], 
+                    response["new_attempts"], 
                     telegram_token, 
                     telegram_user_id, 
                     name=telegram_user_name
                 )
-                last_timestamp = response_data["last_attempt_timestamp"]
-            if response_data["status"] == "timeout":
-                last_timestamp = response_data["timestamp_to_request"]
+                last_timestamp = response["last_attempt_timestamp"]
+            if response["status"] == "timeout":
+                last_timestamp = response["timestamp_to_request"]
         except ReadTimeout as error:
             pass
         except (ConnectionError, HTTPError) as error:
