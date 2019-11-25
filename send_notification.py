@@ -59,6 +59,15 @@ def send_notification(results, token, user_id, name="студент"):
         )
 
 
+def send_greeting(token, user_id, name="студент"):
+    bot = telegram.Bot(token=token)
+    greeting = f"Привет, {name}! Бот работает!"  
+    response = bot.send_message(
+        user_id, 
+        greetin
+    )
+
+
 def main(): 
     load_dotenv()
     dvmn_token = os.getenv("DVMN_API_TOKEN")
@@ -66,6 +75,11 @@ def main():
     telegram_user_id = os.getenv("TELEGRAM_USER_ID")
     telegram_user_name = os.getenv("TELEGRAM_USER_NAME")
     last_timestamp = None
+    send_greeting(
+        telegram_token, 
+        telegram_user_id, 
+        name="Юля"
+    )
     while True:
         try:
             response = send_long_polling_request(
