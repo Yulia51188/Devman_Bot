@@ -64,7 +64,7 @@ def send_greeting(token, user_id, name="студент"):
     greeting = f"Привет, {name}! Бот работает!"  
     response = bot.send_message(
         user_id, 
-        greetin
+        greeting
     )
 
 
