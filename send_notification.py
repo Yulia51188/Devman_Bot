@@ -76,6 +76,7 @@ def main():
     telegram_user_id = os.getenv("TELEGRAM_USER_ID")
     telegram_user_name = os.getenv("TELEGRAM_USER_NAME")
     last_timestamp = None
+    logging.basicConfig(format='%(levelname)s %(filename)s %(funcName)s %(message)s')
     logging.warning("Bot started!")
     while True:
         try:
