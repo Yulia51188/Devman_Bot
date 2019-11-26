@@ -76,7 +76,7 @@ def main():
     telegram_user_id = os.getenv("TELEGRAM_USER_ID")
     telegram_user_name = os.getenv("TELEGRAM_USER_NAME")
     last_timestamp = None
-    logging.info("Bot started!")
+    logging.warning("Bot started!")
     while True:
         try:
             response = send_long_polling_request(
