@@ -7,7 +7,7 @@ from time import sleep
 import telegram
 from telegram.error import TimedOut, NetworkError
 import logging
-import datetime
+from datetime import datetime
 
 
 SLEEP_TIMEOUT = 30
