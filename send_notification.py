@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from time import sleep
 import telegram
 from telegram.error import TimedOut, NetworkError
+import logging
+import datetime
 
 
 SLEEP_TIMEOUT = 30
@@ -75,11 +77,7 @@ def main():
     telegram_user_id = os.getenv("TELEGRAM_USER_ID")
     telegram_user_name = os.getenv("TELEGRAM_USER_NAME")
     last_timestamp = None
-    send_greeting(
-        telegram_token, 
-        telegram_user_id, 
-        name="Юля"
-    )
+    logging.info(f"Bot started at {datetime.now()}")
     while True:
         try:
             response = send_long_polling_request(
