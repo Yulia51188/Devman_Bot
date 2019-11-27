@@ -7,6 +7,7 @@ from time import sleep
 import telegram
 from telegram.error import TimedOut, NetworkError
 import logging
+from logging import FileHandler
 
 
 SLEEP_TIMEOUT = 30
@@ -60,13 +61,35 @@ def send_notification(results, token, user_id, name="студент"):
         )
 
 
-def send_greeting(token, user_id, name="студент"):
-    bot = telegram.Bot(token=token)
-    greeting = f"Привет, {name}! Бот работает!"  
+def send_greeting(bot, user_id):
+    # bot = telegram.Bot(token=token) 
     response = bot.send_message(
         user_id, 
-        greeting
+        f"Бот работает!"
     )
+    return response
+
+
+class TelegramLogsHandler(FileHandler):
+
+    def emit(self, record):
+        log_message = self.format(record)
+        return self.log_bot.send_message(self.admin_id, log_message)
+
+
+    def __init__(self, token, admin_id):
+        self.log_bot = telegram.Bot(token=token)
+        self.admin_id = admin_id
+        super(FileHandler, self).__init__()
+ 
+
+def create_logger(logger_name, token, admin_id):
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.INFO)
+    handler = TelegramLogsHandler(token, admin_id)
+    logger.addHandler(handler)
+    # logger.basicConfig(format='%(levelname)s:%(filename)s:%(funcName)s: %(message)s')
+    return logger
 
 
 def main(): 
@@ -76,8 +99,9 @@ def main():
     telegram_user_id = os.getenv("TELEGRAM_USER_ID")
     telegram_user_name = os.getenv("TELEGRAM_USER_NAME")
     last_timestamp = None
-    logging.basicConfig(format='%(levelname)s:%(filename)s:%(funcName)s: %(message)s')
-    logging.warning("Bot started!")
+    logger = create_logger('telegram_logger', telegram_token, telegram_user_id)
+    logger.warning("Bot started!")
+    logger.info("Я новый логер!")
     while True:
         try:
             response = send_long_polling_request(
@@ -97,10 +121,10 @@ def main():
         except ReadTimeout as error:
             pass
         except (ConnectionError, HTTPError) as error:
-            logging.warning(error)
+            logger.warning(error)
             sleep(SLEEP_TIMEOUT)
         except (NetworkError, TimedOut) as error:
-            logging.warning(error)
+            logger.warning(error)
             sleep(SLEEP_TIMEOUT)
 
 
