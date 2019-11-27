@@ -129,10 +129,10 @@ def main():
         except ReadTimeout as error:
             pass
         except (ConnectionError, HTTPError) as error:
-            logger.warning(error)
+            logger.warning(error, exc_info=True)
             sleep(SLEEP_TIMEOUT)
         except (NetworkError, TimedOut) as error:
-            logger.warning(error)
+            logger.warning(error, exc_info=True)
             sleep(SLEEP_TIMEOUT)
         except Exception as error:
             logger.error(error, exc_info=True)
