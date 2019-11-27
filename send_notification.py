@@ -5,7 +5,7 @@ from requests.exceptions import ReadTimeout, ConnectionError, HTTPError
 from dotenv import load_dotenv
 from time import sleep
 import telegram
-from telegram.error import TimedOut, NetworkError
+from telegram.error import TimedOut, NetworkError, TelegramError
 import logging
 from logging import FileHandler
 
@@ -74,12 +74,17 @@ class TelegramLogsHandler(FileHandler):
 
     def emit(self, record):
         log_message = self.format(record)
-        return self.log_bot.send_message(self.admin_id, log_message)
+        try:
+            self.log_bot.send_message(self.admin_id, log_message)
+        except TelegramError as error:
+            with open(self.filename, 'a') as _file_handler:
+                _file_handler.write(f'{log_message}\n')
 
 
-    def __init__(self, token, admin_id):
+    def __init__(self, token, admin_id, filename='disconnested.log'):
         self.log_bot = telegram.Bot(token=token)
         self.admin_id = admin_id
+        self.filename = filename
         super(FileHandler, self).__init__()
  
 
@@ -87,8 +92,10 @@ def create_logger(logger_name, token, admin_id):
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.INFO)
     handler = TelegramLogsHandler(token, admin_id)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s:%(filename)s: '
+        '%(message)s')
+    handler.setFormatter(formatter)
     logger.addHandler(handler)
-    # logger.basicConfig(format='%(levelname)s:%(filename)s:%(funcName)s: %(message)s')
     return logger
 
 
@@ -97,11 +104,12 @@ def main():
     dvmn_token = os.getenv("DVMN_API_TOKEN")
     telegram_token =  os.getenv("TELEGRAM_BOT_TOKEN")
     telegram_user_id = os.getenv("TELEGRAM_USER_ID")
+    telegram_admin_id = os.getenv("TELEGRAM_ADMIN_ID")
     telegram_user_name = os.getenv("TELEGRAM_USER_NAME")
     last_timestamp = None
-    logger = create_logger('telegram_logger', telegram_token, telegram_user_id)
-    logger.warning("Bot started!")
-    logger.info("Я новый логер!")
+    logger = create_logger('telegram_logger', telegram_token, 
+        telegram_admin_id)
+    logger.info("Bot started!")
     while True:
         try:
             response = send_long_polling_request(
@@ -126,6 +134,8 @@ def main():
         except (NetworkError, TimedOut) as error:
             logger.warning(error)
             sleep(SLEEP_TIMEOUT)
+        except Exception as error:
+            logger.error(error, exc_info=True)
 
 
 if __name__=='__main__':
