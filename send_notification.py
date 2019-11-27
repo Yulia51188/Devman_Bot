@@ -1,6 +1,5 @@
 import requests
 import os
-from pprint import pprint
 from requests.exceptions import ReadTimeout, ConnectionError, HTTPError
 from dotenv import load_dotenv
 from time import sleep
@@ -59,15 +58,6 @@ def send_notification(results, token, user_id, name="студент"):
             user_id, 
             message
         )
-
-
-def send_greeting(bot, user_id):
-    # bot = telegram.Bot(token=token) 
-    response = bot.send_message(
-        user_id, 
-        f"Бот работает!"
-    )
-    return response
 
 
 class TelegramLogsHandler(FileHandler):
