@@ -1,6 +1,8 @@
 # Devman_Bot
 
-A program requests for the availability of the verified task of the [Devman API](https://dvmn.org/api/docs/) and sends a notification to Telegram in case the task returns from the check. It supplies long polling requests so can request for verified tasks every 30 seconds. If any network or connection error occures, the program continues to work and log messages are sent to administrator telegram id (or save to file due to TelegramError).
+A bot is useful for [Devman](https://dvmn.org/modules/) students. It sends you notification in Telegram chat if the task is verified. 
+
+The bot uses [Devman API](https://dvmn.org/api/docs/) and [python-telegram-bot](https://pypi.org/project/python-telegram-bot/). It supplies long polling requests with duration 100s. It sents error log to administrator's Telegram chat. If there is no connection it saves log to a file 'disconnested.log'.
 
 # How to install
 The script uses enviroment file with Devman and Telegram authorization data. The file '.env' must include following data:
