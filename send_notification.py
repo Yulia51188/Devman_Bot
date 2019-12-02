@@ -61,7 +61,13 @@ def send_notification(results, token, user_id, name="студент"):
 
 
 class TelegramLogsHandler(FileHandler):
-
+                        
+    def __init__(self, token, admin_id, filename='disconnested.log'):
+        self.log_bot = telegram.Bot(token=token)
+        self.admin_id = admin_id
+        self.filename = filename
+        super(FileHandler, self).__init__()
+                        
     def emit(self, record):
         log_message = self.format(record)
         try:
@@ -70,13 +76,6 @@ class TelegramLogsHandler(FileHandler):
             with open(self.filename, 'a') as _file_handler:
                 _file_handler.write(f'{log_message}\n')
 
-
-    def __init__(self, token, admin_id, filename='disconnested.log'):
-        self.log_bot = telegram.Bot(token=token)
-        self.admin_id = admin_id
-        self.filename = filename
-        super(FileHandler, self).__init__()
- 
 
 def create_logger(logger_name, token, admin_id):
     logger = logging.getLogger(logger_name)
