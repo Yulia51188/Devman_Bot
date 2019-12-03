@@ -65,8 +65,7 @@ class TelegramLogsHandler(FileHandler):
     def __init__(self, token, admin_id, filename='disconnested.log'):
         self.log_bot = telegram.Bot(token=token)
         self.admin_id = admin_id
-        self.filename = filename
-        super().__init__()
+        super().__init__(filename = filename)
                         
     def emit(self, record):
         log_message = self.format(record)
