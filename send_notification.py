@@ -66,7 +66,7 @@ class TelegramLogsHandler(FileHandler):
         self.log_bot = telegram.Bot(token=token)
         self.admin_id = admin_id
         self.filename = filename
-        super(FileHandler, self).__init__()
+        super().__init__()
                         
     def emit(self, record):
         log_message = self.format(record)
